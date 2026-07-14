@@ -1,4 +1,5 @@
 from langchain_groq import ChatGroq
+from langchain_tavily import TavilySearch
 from src.exception import CustomException
 from src.config import get_settings
 import sys
@@ -24,5 +25,32 @@ def get_llm(
         )
         return llm
 
+    except Exception as e:
+        raise CustomException(e,sys)
+
+def web_search(
+    query: str | None,
+    max_results: int | None = 2,
+    topic: str | None = "general"
+) -> list[str]:
+    """
+    Performs a web search using the Tavily Search API.
+    Returns a list of search results.
+    """
+    try:
+        search = TavilySearch(
+            max_results = max_results,
+            topic = topic,
+            api_key = settings.TAVILY_API_KEY
+        )
+        response = search.invoke(query)
+        results = []
+
+        for res in response["results"]:
+
+            results.append(res["content"])
+            
+        return results
+    
     except Exception as e:
         raise CustomException(e,sys)

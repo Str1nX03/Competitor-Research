@@ -5,7 +5,7 @@ langchain
 pydantic_settings
 langchain_core
 langchain_community
-pydantic
+langchain_tavily
 langsmith
 uvicorn
 ipykernel
