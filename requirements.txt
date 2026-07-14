@@ -1,0 +1,11 @@
+fastapi
+langgraph
+langchain_groq
+langchain
+pydantic_settings
+langchain_core
+langchain_community
+pydantic
+langsmith
+uvicorn
+ipykernel
