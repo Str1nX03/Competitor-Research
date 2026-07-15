@@ -1,4 +1,3 @@
-fastapi
 langgraph
 langchain_groq
 langchain
@@ -7,9 +6,10 @@ langchain_core
 langchain_community
 langchain_tavily
 langsmith
-uvicorn
 ipykernel
 websockets
 jinja2
 markdown
 xhtml2pdf
+flask
+flask-sock

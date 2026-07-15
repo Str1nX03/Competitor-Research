@@ -41,7 +41,7 @@ def web_search(
         search = TavilySearch(
             max_results = max_results,
             topic = topic,
-            api_key = settings.TAVILY_API_KEY
+            tavily_api_key = settings.TAVILY_API_KEY
         )
         response = search.invoke(query)
         results = []

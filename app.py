@@ -1,12 +1,8 @@
 import os
 import io
 import json
-import asyncio
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+from flask import Flask, render_template, request, send_file, jsonify
+from flask_sock import Sock
 import markdown
 from xhtml2pdf import pisa
 from tempfile import NamedTemporaryFile
@@ -16,93 +12,81 @@ from src.agents.assistant_agent import AssistantAgent
 from src.agents.researcher_agent import ResearcherAgent
 from src.agents.reporter_agent import ReporterAgent
 
-app = FastAPI(title="Competitor Insights AI")
+app = Flask(__name__)
+sock = Sock(app)
 
-# Create necessary directories if they don't exist
-os.makedirs("static/css", exist_ok=True)
-os.makedirs("static/js", exist_ok=True)
-os.makedirs("templates", exist_ok=True)
+@app.route('/')
+def landing_page():
+    return render_template('index.html')
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+@app.route('/product')
+def product_page():
+    return render_template('product.html')
 
-# Setup templates
-templates = Jinja2Templates(directory="templates")
-
-class MarkdownRequest(BaseModel):
-    markdown_text: str
-
-@app.get("/", response_class=HTMLResponse)
-async def landing_page(request: Request):
-    return templates.TemplateResponse(request=request, name="index.html")
-
-@app.get("/product", response_class=HTMLResponse)
-async def product_page(request: Request):
-    return templates.TemplateResponse(request=request, name="product.html")
-
-@app.websocket("/ws/research")
-async def websocket_research(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        # Receive the query from the client
-        query = await websocket.receive_text()
+@sock.route('/ws/research')
+def websocket_research(ws):
+    query = ws.receive()
+    if not query:
+        return
         
-        await websocket.send_json({
+    try:
+        ws.send(json.dumps({
             "type": "status", 
             "message": "Assistant Agent is analyzing your query and gathering context..."
-        })
-        
-        # We need to run synchronous LangGraph agents in a threadpool to not block the event loop
-        # But for simplicity, if they aren't fully async, we can run them with asyncio.to_thread
+        }))
         
         # Step 1: Assistant Agent
         assistant_agent = AssistantAgent()
-        context = await asyncio.to_thread(assistant_agent.run, query)
+        context = assistant_agent.run(query)
         
-        await websocket.send_json({
+        ws.send(json.dumps({
             "type": "status", 
             "message": "Assistant Agent finished. Researcher Agent is fetching real-time competitor data..."
-        })
+        }))
         
         # Step 2: Researcher Agent
         researcher_agent = ResearcherAgent()
-        research_data = await asyncio.to_thread(researcher_agent.run, context)
+        research_data = researcher_agent.run(context)
         
-        await websocket.send_json({
+        ws.send(json.dumps({
             "type": "status", 
             "message": "Researcher Agent finished. Reporter Agent is generating the final comprehensive report..."
-        })
+        }))
         
         # Step 3: Reporter Agent
         reporter_agent = ReporterAgent()
-        reports = await asyncio.to_thread(reporter_agent.run, research_data)
+        reports = reporter_agent.run(research_data)
         
         # ReporterAgent returns a list of strings (reports for each competitor)
         # We join them into a single markdown string
         final_report = "\n\n".join(reports)
         
         # Send completion with final markdown report
-        await websocket.send_json({
+        ws.send(json.dumps({
             "type": "complete",
             "report": final_report
-        })
+        }))
         
-    except WebSocketDisconnect:
-        print("Client disconnected")
     except Exception as e:
         print(f"Error during research pipeline: {e}")
-        await websocket.send_json({
+        ws.send(json.dumps({
             "type": "error",
             "message": str(e)
-        })
+        }))
 
-@app.post("/download-pdf")
-async def download_pdf(request: MarkdownRequest):
+@app.route('/download-pdf', methods=['POST'])
+def download_pdf():
     try:
+        data = request.json
+        if not data or 'markdown_text' not in data:
+            return jsonify({"error": "No markdown_text provided"}), 400
+            
+        markdown_text = data['markdown_text']
+        
         # Convert markdown to HTML
         # Enabling 'tables' and 'fenced_code' extensions for better formatting
         html_content = markdown.markdown(
-            request.markdown_text, 
+            markdown_text, 
             extensions=['tables', 'fenced_code']
         )
         
@@ -171,17 +155,16 @@ async def download_pdf(request: MarkdownRequest):
             raise Exception("Failed to generate PDF")
             
         # Return as file response
-        return FileResponse(
-            path=temp_pdf.name,
-            media_type='application/pdf',
-            filename='competitor_research_report.pdf',
-            background=None
+        return send_file(
+            temp_pdf.name,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='competitor_research_report.pdf'
         )
         
     except Exception as e:
         print(f"PDF generation error: {e}")
-        return {"error": str(e)}
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    app.run(debug=True, port=8000)
