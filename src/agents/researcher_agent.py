@@ -100,7 +100,9 @@ class ResearcherAgent:
 
             final_state = self.graph.invoke(initial_state)
 
-            return final_state["research_data"]
+            researched_data = final_state["research_data"]
+
+            return researched_data
 
         except Exception as e:
             
