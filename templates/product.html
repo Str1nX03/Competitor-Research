@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Competitor Insights AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Include marked.js for client-side markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="app-body">
+    <div class="background-animation"></div>
+    <div class="glass-container app-container">
+        <header class="app-header">
+            <a href="/" class="logo small">Competitor Insights <span class="accent">AI</span></a>
+        </header>
+        
+        <div class="app-layout">
+            <aside class="query-panel">
+                <h2>New Research</h2>
+                <p class="subtitle">Enter the competitor or market you want to analyze.</p>
+                <div class="input-group">
+                    <textarea id="queryInput" placeholder="e.g., Analyze the competitive landscape for Anthropic's Claude..." rows="4"></textarea>
+                </div>
+                <button id="startBtn" class="btn-primary full-width">Generate Report</button>
+                
+                <div class="status-container" id="statusContainer" style="display: none;">
+                    <h3>Live Status</h3>
+                    <ul id="statusList" class="status-list">
+                        <!-- Status updates will appear here -->
+                    </ul>
+                    <div class="loader" id="loader"></div>
+                </div>
+            </aside>
+            
+            <main class="report-panel">
+                <div class="report-header" id="reportHeader" style="display: none;">
+                    <h2>Generated Report</h2>
+                    <button id="downloadPdfBtn" class="btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Download PDF
+                    </button>
+                </div>
+                <div class="report-content" id="reportContent">
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <p>Your research report will appear here.</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

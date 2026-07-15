@@ -9,3 +9,7 @@ langchain_tavily
 langsmith
 uvicorn
 ipykernel
+websockets
+jinja2
+markdown
+xhtml2pdf
