@@ -15,7 +15,6 @@ Return only one word only.
 """
 
 CONTEXT_RETRIEVAL_PROMPT = """
-
 You are an assistant whose task is to ask 3 questions which you should search on internet to get the proper information about:-
 
 User Input:- {user_input}
@@ -28,5 +27,4 @@ If its a "product", then ask questions to get most information about the product
 Return only 3 questions in a list format.
 
 Example:- ["question1", "question2", "question3"]
-
 """
