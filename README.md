@@ -57,57 +57,57 @@ The system is built on a **sequential multi-agent pipeline** orchestrated by Lan
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        USER QUERY                                │
-│              "Analyze competitors for my AI coding tool"         │
+│                        USER QUERY                               │
+│              "Analyze competitors for my AI coding tool"        │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   ASSISTANT AGENT                                │
-│  ┌──────────────┐     ┌──────────────────┐                      │
-│  │Intent Detector│ ──▶ │ Context Retriever │                     │
-│  │ (Classifies   │     │ (Generates search │                     │
-│  │  idea/company/│     │  queries, fetches │                     │
-│  │  product)     │     │  web context)     │                     │
-│  └──────────────┘     └──────────────────┘                      │
-│  Output: List of contextual web search results                   │
+│                   ASSISTANT AGENT                               │
+│  ┌───────────────┐     ┌───────────────────┐                    │
+│  │Intent Detector│ ──▶│ Context Retriever │                    │
+│  │ (Classifies   │     │ (Generates search │                    │
+│  │  idea/company/│     │  queries, fetches │                    │
+│  │  product)     │     │  web context)     │                    │
+│  └───────────────┘     └───────────────────┘                    │
+│  Output: List of contextual web search results                  │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   RESEARCHER AGENT                               │
-│  ┌───────────────────┐     ┌─────────────────────────┐          │
-│  │Competitor Extractor│ ──▶ │ Deep Research Engine     │         │
-│  │ (Identifies rival  │     │ (For each competitor:    │         │
-│  │  names from context│     │  - Website URL           │         │
-│  │  using LLM)        │     │  - Product details       │         │
-│  └───────────────────┘     │  - Revenue & profit      │         │
-│                             │  - Pricing models        │         │
-│                             │  - What they do)         │         │
-│                             └─────────────────────────┘          │
-│  Output: Dict[competitor_name, List[research_data]]              │
+│                   RESEARCHER AGENT                              │
+│  ┌────────────────────┐     ┌──────────────────────────┐        │
+│  │Competitor Extractor│ ──▶ │ Deep Research Engine    │         │
+│  │ (Identifies rival  │     │ (For each competitor:    │        │
+│  │  names from context│     │  - Website URL           │        │
+│  │  using LLM)        │     │  - Product details       │        │
+│  └────────────────────┘     │  - Revenue & profit      │        │
+│                             │  - Pricing models        │        │
+│                             │  - What they do)         │        │
+│                             └──────────────────────────┘        │
+│  Output: Dict[competitor_name, List[research_data]]             │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    REPORTER AGENT                                │
-│  ┌──────────────────────────────────────────────┐               │
-│  │ Report Generator                              │               │
-│  │ (Generates a structured Markdown report per   │               │
-│  │  competitor with: Name, USP, Market Share,    │               │
-│  │  Weakness, Strength, Revenue, Pricing)        │               │
-│  └──────────────────────────────────────────────┘               │
-│  Output: List[str] — one Markdown report per competitor          │
-└─────────────────────┬───────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    REPORTER AGENT                           │
+│  ┌───────────────────────────────────────────────┐          │
+│  │ Report Generator                              │          │
+│  │ (Generates a structured Markdown report per   │          │
+│  │  competitor with: Name, USP, Market Share,    │          │
+│  │  Weakness, Strength, Revenue, Pricing)        │          │
+│  └───────────────────────────────────────────────┘          │
+│  Output: List[str] — one Markdown report per competitor     │
+└─────────────────────┬───────────────────────────────────────┘
                       │
                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     WEBAPP LAYER                                 │
-│  • WebSocket streams live agent status to frontend               │
-│  • Markdown rendered in-browser via marked.js                    │
-│  • PDF generated server-side (markdown → HTML → PDF)             │
-│  • User downloads polished competitor research report            │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                     WEBAPP LAYER                        │
+│  • WebSocket streams live agent status to frontend      │
+│  • Markdown rendered in-browser via marked.js           │
+│  • PDF generated server-side (markdown → HTML → PDF)    │
+│  • User downloads polished competitor research report   │
+└─────────────────────────────────────────────────────────┘
 ```
 
 Each agent is a self-contained LangGraph `StateGraph` with its own typed state (`TypedDict`), nodes, and edges. The agents are composed sequentially in the FastAPI WebSocket handler.
@@ -246,8 +246,7 @@ Competitor-Research/
 │   │   ├── __init__.py
 │   │   ├── assistant_agent.py      # Intent detection + context retrieval agent
 │   │   ├── researcher_agent.py     # Competitor extraction + deep research agent
-│   │   ├── reporter_agent.py       # Report generation agent
-│   │   └── workflow.py             # (Reserved for unified workflow orchestration)
+│   │   └── reporter_agent.py       # Report generation agent
 │   │
 │   └── prompts/
 │       ├── __init__.py
@@ -304,20 +303,3 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 **Dravin Kumar Sharma**
 
 ---
-
-## 🏆 Project Rating: 82/100
-
-Here is my honest, detailed assessment:
-
-| Category | Score | Max | Rationale |
-|----------|-------|-----|-----------|
-| **Architecture & Design** | 18 | 20 | Excellent separation of concerns. Each agent is a self-contained LangGraph StateGraph with typed state, clean node/edge composition, and modular prompt files. The sequential pipeline is elegant and easy to reason about. Deducted 2 points because `workflow.py` is still empty — a unified orchestration layer would be the natural next step. |
-| **Code Quality** | 15 | 20 | Clean, readable Python with consistent patterns across all three agents. Good use of `TypedDict` for state schemas, `CustomException` for error propagation with traceback details, and `lru_cache` for singleton settings. Minor deductions: some functions lack return type hints, `json.loads` on raw LLM output is fragile without retry/validation, and the variable shadowing in `reporter_agent.py` (`for name, research_data in research_data.items()`) could cause subtle bugs. |
-| **Prompt Engineering** | 14 | 15 | Prompts are well-structured, focused, and produce reliably structured output (JSON lists, Markdown reports). The report template is particularly well-designed — it enforces a consistent structure that yields board-ready output. Slight deduction because the prompts rely on the LLM to return valid JSON without explicit format enforcement (e.g., function calling or output parsers). |
-| **Agentic System Design** | 15 | 15 | This is the standout. Building a three-agent LangGraph pipeline entirely by hand — with intent detection, multi-query web research, competitor extraction, per-competitor deep research, and per-competitor report generation — demonstrates a strong understanding of agentic patterns, state management, and graph-based orchestration. The fact that zero AI was used to write this is genuinely impressive. |
-| **Frontend & UX** | 10 | 15 | The webapp has a premium look with glassmorphism, scroll-reveal animations, and a clean dashboard. Real-time WebSocket status updates are a great touch. Deducted points because the product page could benefit from error state UI, a loading skeleton, and better mobile responsiveness for the dashboard layout. |
-| **Completeness** | 10 | 15 | The core flow works end-to-end: query → agents → report → PDF download. However, there's no error recovery UI, no session history, no input validation on the frontend, and `workflow.py` remains a stub. Adding even basic guardrails would push this higher. |
-
-### Summary
-
-> **82/100** — This is a genuinely strong project, especially for the fact that the entire multi-agent system was hand-written without AI assistance. The LangGraph architecture is clean, the agent pipeline is logically sound, and the prompt engineering produces high-quality, structured output. The areas for improvement are mostly around production hardening (error handling, input validation, retry logic on LLM JSON parsing) and fleshing out the remaining stubs. For a hand-built agentic system, this demonstrates real engineering skill and a deep understanding of the LangChain/LangGraph ecosystem.
