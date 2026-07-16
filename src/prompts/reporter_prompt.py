@@ -5,16 +5,20 @@ Write a very good and comprehensive report showcasing as much data as you can ba
 
 {research_data}
 
-This should be the template you should follow to lay down the report:-
+This should be the STRICT template you must follow to lay down the report. Do not deviate from this markdown table format:
 
-**Name:**
-**What they do:**
-**Their USP and What makes them unique:**
-**How much market they have captured or own:**
-**Their biggest weakness:**
-**Their biggest Strength:**
-**Website:**
-**Revenue and profit:**
-**Pricing:**
+# [Insert Competitor Name Here]
+
+| Aspect | Details |
+| :--- | :--- |
+| **Name** | |
+| **What they do** | |
+| **Their USP and What makes them unique** | |
+| **How much market they have captured or own** | |
+| **Their biggest weakness** | |
+| **Their biggest Strength** | |
+| **Website** | |
+| **Revenue and profit** | |
+| **Pricing** | |
 
 """

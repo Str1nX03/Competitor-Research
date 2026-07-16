@@ -58,8 +58,8 @@ def websocket_research(ws):
         reports = reporter_agent.run(research_data)
         
         # ReporterAgent returns a list of strings (reports for each competitor)
-        # We join them into a single markdown string
-        final_report = "\n\n".join(reports)
+        # We join them into a single markdown string with horizontal rules
+        final_report = "\n\n---\n\n".join(reports)
         
         # Send completion with final markdown report
         ws.send(json.dumps({
@@ -89,6 +89,10 @@ def download_pdf():
             markdown_text, 
             extensions=['tables', 'fenced_code']
         )
+        
+        # Replace Markdown horizontal rules with xhtml2pdf page break tags
+        # This ensures each competitor starts on a fresh page
+        html_content = html_content.replace("<hr />", "<pdf:nextpage />")
         
         # Basic CSS for the PDF rendering to make tables and text look good
         pdf_css = """
