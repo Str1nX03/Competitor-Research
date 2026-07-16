@@ -33,7 +33,25 @@ class ResearcherAgent:
             ))
             content = response.content.strip()
             
-            competitors = json.loads(content)
+            # Clean markdown JSON block formatting if present
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].strip()
+
+            try:
+                competitors = json.loads(content)
+            except json.JSONDecodeError:
+                # Fallback if the LLM output is entirely unparsable
+                import re
+                match = re.search(r'\[.*?\]', response.content, re.DOTALL)
+                if match:
+                    try:
+                        competitors = json.loads(match.group(0))
+                    except json.JSONDecodeError:
+                        competitors = []
+                else:
+                    competitors = []
 
             return {"competitors": competitors}
 
