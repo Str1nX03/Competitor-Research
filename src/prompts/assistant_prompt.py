@@ -26,5 +26,7 @@ If its a "product", then ask questions to get most information about the product
 
 Return only 3 questions in a list format.
 
+Always among the 3 questions, make one question to understand who are the competitors for the proposed or provided idea/product/company at all cost to get the names of some competitors atleast.
+
 Example:- ["question1", "question2", "question3"]
 """
