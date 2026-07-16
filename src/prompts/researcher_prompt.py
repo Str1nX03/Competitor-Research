@@ -11,9 +11,6 @@ Context:
 Return STRICTLY as a JSON list. Example:
 [
     "Competitor 1",
-    "Competitor 2",
-    .,
-    .,
+    "Competitor 2"
 ]
-If none found, return []
 """
