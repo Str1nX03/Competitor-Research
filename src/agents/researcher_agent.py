@@ -42,31 +42,16 @@ class ResearcherAgent:
             try:
                 competitors = json.loads(content)
             except json.JSONDecodeError:
-                # Fallback if the LLM output is entirely unparsable or uses Python single quotes
+                # Fallback if the LLM output is entirely unparsable
                 import re
-                import ast
                 match = re.search(r'\[.*?\]', response.content, re.DOTALL)
                 if match:
                     try:
-                        competitors = ast.literal_eval(match.group(0))
-                    except (SyntaxError, ValueError):
-                        print(f"[ERROR] Failed to parse competitors from: {response.content}")
+                        competitors = json.loads(match.group(0))
+                    except json.JSONDecodeError:
                         competitors = []
                 else:
-                    print(f"[ERROR] No list found in LLM response: {response.content}")
                     competitors = []
-
-            # Safety check: if the LLM returned a JSON object like {"competitors": ["A", "B"]} instead of a direct list
-            if isinstance(competitors, dict):
-                for key, val in competitors.items():
-                    if isinstance(val, list):
-                        competitors = val
-                        break
-            
-            # Final safety check
-            if not isinstance(competitors, list):
-                print(f"[ERROR] Extracted data is not a list: {competitors}")
-                competitors = []
 
             return {"competitors": competitors}
 
