@@ -15,7 +15,7 @@ Return only one word only.
 """
 
 CONTEXT_RETRIEVAL_PROMPT = """
-You are an assistant whose task is to ask 3 questions which you should search on internet to get the proper information about:-
+You are an assistant whose task is to ask 3 questions which you should search on internet to get the proper information about especially the names of the competitors:-
 
 User Input:- {user_input}
 For the intent to get information on:- {user_intent} provided
@@ -25,8 +25,6 @@ If its a "company", then ask questions to get most information on similar workin
 If its a "product", then ask questions to get most information about the product and also how it works.
 
 Return only 3 questions in a list format.
-
-Always among the 3 questions, make one question to understand who are the competitors for the proposed or provided idea/product/company at all cost to get the names of some competitors atleast.
 
 Example:- ["question1", "question2", "question3"]
 """
