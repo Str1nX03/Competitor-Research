@@ -13,3 +13,4 @@ markdown
 xhtml2pdf
 flask
 flask-sock
+gunicorn
