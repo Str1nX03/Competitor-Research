@@ -77,7 +77,7 @@ The system is built on a **sequential multi-agent pipeline** orchestrated by Lan
 ┌─────────────────────────────────────────────────────────────────┐
 │                   RESEARCHER AGENT                              │
 │  ┌────────────────────┐     ┌──────────────────────────┐        │
-│  │Competitor Extractor│ ──▶ │ Deep Research Engine    │         │
+│  │Competitor Extractor│ ──▶│ Deep Research Engine     │        │
 │  │ (Identifies rival  │     │ (For each competitor:    │        │
 │  │  names from context│     │  - Website URL           │        │
 │  │  using LLM)        │     │  - Product details       │        │
