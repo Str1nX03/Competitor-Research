@@ -719,12 +719,21 @@ footer { padding: 2rem 0; border-top: 1px solid var(--glass-border); background:
     padding: 1rem;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
 }
 
 .history-item:hover {
     background: rgba(59, 130, 246, 0.1);
     border-color: rgba(59, 130, 246, 0.3);
     transform: translateY(-2px);
+}
+
+.history-item-content {
+    flex: 1;
+    overflow: hidden;
 }
 
 .history-item-query {
@@ -741,4 +750,27 @@ footer { padding: 2rem 0; border-top: 1px solid var(--glass-border); background:
 .history-item-date {
     font-size: 0.75rem;
     color: var(--text-secondary);
+}
+
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-item:hover .delete-btn {
+    opacity: 1;
+}
+
+.delete-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
 }

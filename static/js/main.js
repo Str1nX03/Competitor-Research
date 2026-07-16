@@ -174,10 +174,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                 
                 li.innerHTML = `
-                    <div class="history-item-query">${report.query}</div>
-                    <div class="history-item-date">${dateStr}</div>
+                    <div class="history-item-content">
+                        <div class="history-item-query">${report.query}</div>
+                        <div class="history-item-date">${dateStr}</div>
+                    </div>
+                    <button class="delete-btn" title="Delete Report">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
                 `;
-                li.addEventListener('click', () => loadReport(report.id));
+                
+                li.querySelector('.history-item-content').addEventListener('click', () => loadReport(report.id));
+                
+                li.querySelector('.delete-btn').addEventListener('click', async (e) => {
+                    e.stopPropagation(); // prevent triggering the list item click
+                    if(confirm('Are you sure you want to delete this report?')) {
+                        await deleteReport(report.id);
+                    }
+                });
                 historyList.appendChild(li);
             });
         } catch (e) {
@@ -200,6 +213,29 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {
             console.error("Failed to load report", e);
             alert("Could not load the report.");
+        }
+    }
+
+    async function deleteReport(id) {
+        try {
+            const res = await fetch(`/api/reports/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete report');
+            
+            // Clear current view
+            reportContent.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📊</div>
+                    <p>Your research report will appear here.</p>
+                </div>
+            `;
+            reportHeader.style.display = 'none';
+            currentMarkdown = '';
+            
+            // Refresh history
+            fetchHistory();
+        } catch (e) {
+            console.error("Failed to delete report", e);
+            alert("Could not delete the report.");
         }
     }
 });

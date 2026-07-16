@@ -122,6 +122,18 @@ def get_report(report_id):
         return jsonify(dict(report))
     return jsonify({"error": "Report not found"}), 404
 
+@app.route('/api/reports/<int:report_id>', methods=['DELETE'])
+def delete_report(report_id):
+    conn = sqlite3.connect('reports.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM reports WHERE id = ?', (report_id,))
+    conn.commit()
+    deleted = cursor.rowcount > 0
+    conn.close()
+    if deleted:
+        return jsonify({"success": True})
+    return jsonify({"error": "Report not found"}), 404
+
 @app.route('/download-pdf', methods=['POST'])
 def download_pdf():
     try:
