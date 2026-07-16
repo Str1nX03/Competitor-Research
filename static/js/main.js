@@ -10,8 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const reportContent = document.getElementById('reportContent');
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
     
+    const historyContainer = document.getElementById('historyContainer');
+    const historyList = document.getElementById('historyList');
+
     let currentMarkdown = '';
     let ws = null;
+
+    // Load history on initial load
+    fetchHistory();
 
     startBtn.addEventListener('click', () => {
         const query = queryInput.value.trim();
@@ -60,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     reportHeader.style.display = 'flex';
                     startBtn.disabled = false;
                     ws.close();
+                    
+                    // Refresh history list
+                    fetchHistory();
                 } else if (data.type === 'error') {
                     loader.style.display = 'none';
                     addStatus(`Error: ${data.message}`, false);
@@ -141,5 +150,56 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Auto scroll to bottom of status
         statusContainer.scrollTop = statusContainer.scrollHeight;
+    }
+
+    async function fetchHistory() {
+        if (!historyList) return;
+        try {
+            const res = await fetch('/api/reports');
+            if (!res.ok) return;
+            const reports = await res.json();
+            historyList.innerHTML = '';
+            
+            if (reports.length === 0) {
+                historyList.innerHTML = '<li style="color: var(--text-secondary); font-size: 0.9rem;">No past reports found.</li>';
+                return;
+            }
+            
+            reports.forEach(report => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                
+                // Ensure date parses correctly by assuming UTC from sqlite
+                const d = new Date(report.created_at + 'Z');
+                const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                
+                li.innerHTML = `
+                    <div class="history-item-query">${report.query}</div>
+                    <div class="history-item-date">${dateStr}</div>
+                `;
+                li.addEventListener('click', () => loadReport(report.id));
+                historyList.appendChild(li);
+            });
+        } catch (e) {
+            console.error("Failed to fetch history", e);
+        }
+    }
+
+    async function loadReport(id) {
+        try {
+            const res = await fetch(`/api/reports/${id}`);
+            if (!res.ok) throw new Error('Report not found');
+            const report = await res.json();
+            
+            currentMarkdown = report.report_markdown;
+            reportContent.innerHTML = marked.parse(currentMarkdown);
+            reportHeader.style.display = 'flex';
+            
+            // Hide status container if we are just viewing a past report
+            statusContainer.style.display = 'none';
+        } catch (e) {
+            console.error("Failed to load report", e);
+            alert("Could not load the report.");
+        }
     }
 });

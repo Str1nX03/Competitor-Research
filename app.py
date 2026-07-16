@@ -1,6 +1,7 @@
 import os
 import io
 import json
+import sqlite3
 from flask import Flask, render_template, request, send_file, jsonify
 from flask_sock import Sock
 import markdown
@@ -14,6 +15,22 @@ from src.agents.reporter_agent import ReporterAgent
 
 app = Flask(__name__)
 sock = Sock(app)
+
+def init_db():
+    conn = sqlite3.connect('reports.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            query TEXT NOT NULL,
+            report_markdown TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
 
 @app.route('/')
 def landing_page():
@@ -61,10 +78,19 @@ def websocket_research(ws):
         # We join them into a single markdown string
         final_report = "\n\n".join(reports)
         
+        # Save to database
+        conn = sqlite3.connect('reports.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO reports (query, report_markdown) VALUES (?, ?)', (query, final_report))
+        report_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
         # Send completion with final markdown report
         ws.send(json.dumps({
             "type": "complete",
-            "report": final_report
+            "report": final_report,
+            "id": report_id
         }))
         
     except Exception as e:
@@ -73,6 +99,28 @@ def websocket_research(ws):
             "type": "error",
             "message": str(e)
         }))
+
+@app.route('/api/reports')
+def get_reports():
+    conn = sqlite3.connect('reports.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, query, created_at FROM reports ORDER BY created_at DESC')
+    reports = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(reports)
+
+@app.route('/api/reports/<int:report_id>')
+def get_report(report_id):
+    conn = sqlite3.connect('reports.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, query, report_markdown, created_at FROM reports WHERE id = ?', (report_id,))
+    report = cursor.fetchone()
+    conn.close()
+    if report:
+        return jsonify(dict(report))
+    return jsonify({"error": "Report not found"}), 404
 
 @app.route('/download-pdf', methods=['POST'])
 def download_pdf():
