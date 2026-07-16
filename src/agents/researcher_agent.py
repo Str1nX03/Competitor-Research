@@ -9,7 +9,7 @@ from src.prompts.researcher_prompt import COMPETITOR_EXTRACT_PROMPT
 
 class AgentState(TypedDict):
 
-    context: List[str]
+    user_input: str
     competitors: List[str]
     research_data: Dict[str, List[str]]
 
@@ -24,34 +24,35 @@ class ResearcherAgent:
 
         try:
 
-            context = state["context"]
+            competitor_data = []
+            user_input = state["user_input"]
+
+            query = f"Who are the competitors of {user_input}"
+
+            competitor_data = web_search(query)
+
+            schema = {
+                "title": "CompetitorExtraction",
+                "type": "object",
+                "properties": {
+                    "competitors": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of competitors names extracted from the query"
+                    }
+                },
+                "required": ["competitors"]
+            }
+
+            structured_llm = self.llm.with_structured_output(schema, method="json_mode")
 
             prompt = ChatPromptTemplate.from_template(COMPETITOR_EXTRACT_PROMPT)
 
-            response = self.llm.invoke(prompt.format(
-                context = context
+            response = structured_llm.invoke(prompt.format(
+                competitor_data = competitor_data
             ))
-            content = response.content.strip()
-            
-            # Clean markdown JSON block formatting if present
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            elif "```" in content:
-                content = content.split("```")[1].strip()
 
-            try:
-                competitors = json.loads(content)
-            except json.JSONDecodeError:
-                # Fallback if the LLM output is entirely unparsable
-                import re
-                match = re.search(r'\[.*?\]', response.content, re.DOTALL)
-                if match:
-                    try:
-                        competitors = json.loads(match.group(0))
-                    except json.JSONDecodeError:
-                        competitors = []
-                else:
-                    competitors = []
+            competitors = response.get("competitors", []) if isinstance(response, dict) else []
 
             return {"competitors": competitors}
 
@@ -107,12 +108,12 @@ class ResearcherAgent:
 
             raise CustomException(e,sys)
 
-    def run(self, context:List[str]):
+    def run(self, user_input: str):
 
         try:
 
             initial_state = {
-                "context": context,
+                "user_input": user_input,
                 "competitors": [],
                 "research_data": {}
             }

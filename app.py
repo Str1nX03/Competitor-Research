@@ -9,7 +9,6 @@ from xhtml2pdf import pisa
 from tempfile import NamedTemporaryFile
 
 # Import agents
-from src.agents.assistant_agent import AssistantAgent
 from src.agents.researcher_agent import ResearcherAgent
 from src.agents.reporter_agent import ReporterAgent
 
@@ -49,28 +48,19 @@ def websocket_research(ws):
     try:
         ws.send(json.dumps({
             "type": "status", 
-            "message": "Assistant Agent is analyzing your query and gathering context..."
+            "message": "Researcher Agent is analyzing your query and fetching real-time competitor data..."
         }))
         
-        # Step 1: Assistant Agent
-        assistant_agent = AssistantAgent()
-        context = assistant_agent.run(query)
-        
-        ws.send(json.dumps({
-            "type": "status", 
-            "message": "Assistant Agent finished. Researcher Agent is fetching real-time competitor data..."
-        }))
-        
-        # Step 2: Researcher Agent
+        # Step 1: Researcher Agent
         researcher_agent = ResearcherAgent()
-        research_data = researcher_agent.run(context)
+        research_data = researcher_agent.run(query)
         
         ws.send(json.dumps({
             "type": "status", 
             "message": "Researcher Agent finished. Reporter Agent is generating the final comprehensive report..."
         }))
         
-        # Step 3: Reporter Agent
+        # Step 2: Reporter Agent
         reporter_agent = ReporterAgent()
         reports = reporter_agent.run(research_data)
         
