@@ -29,7 +29,8 @@ class ReporterAgent:
             for name, research_data in research_data.items():
 
                 response = self.llm.invoke(prompt.format(
-                    research_data = research_data
+                    research_data = research_data,
+                    name = name
                 ))
 
                 reports.append(response.content)
