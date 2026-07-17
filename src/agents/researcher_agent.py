@@ -28,14 +28,17 @@ class ResearcherAgent:
             competitor_data = []
             user_input = state["user_input"]
 
-            query = f"Who are the competitors of {user_input}"
+            query = f"Top competitors and products in the space of {user_input}"
 
             competitor_data = web_search(query)
+
+            # Join list into clean readable text for the LLM
+            context_text = "\n\n".join(competitor_data) if competitor_data else "No data found."
 
             prompt = ChatPromptTemplate.from_template(COMPETITOR_EXTRACT_PROMPT)
 
             response = self.llm.invoke(prompt.format(
-                competitor_data = competitor_data
+                competitor_data = context_text
             ))
             content = response.content.strip()
 
