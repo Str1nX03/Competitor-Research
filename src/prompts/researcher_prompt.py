@@ -7,13 +7,9 @@ Find as many competitors as possible.
 Context:
 {competitor_data}
 
-Return STRICTLY as a JSON object. Example:
-{{
-    "competitors": [
-        "Competitor 1",
-        "Competitor 2"
-    ]
-}}
+Return STRICTLY like this. Example:
 
-Always extract all the competitors mentioned in the provided context.
+Output: "Competitor 1, Competitor 2"
+
+Always extract all the competitors mentioned in the provided context, just for example I have given only 2.
 """

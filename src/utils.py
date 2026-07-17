@@ -44,13 +44,13 @@ def web_search(
             tavily_api_key = settings.TAVILY_API_KEY
         )
         response = search.invoke(query)
-        results = []
+        result = []
 
         for res in response["results"]:
 
-            results.append(res["content"])
+            result.append(res["content"])
             
-        return results
+        return result
     
     except Exception as e:
         raise CustomException(e,sys)
