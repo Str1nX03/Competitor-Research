@@ -42,11 +42,16 @@ class ResearcherAgent:
             ))
             content = response.content.strip()
 
+            # DEBUG: Log what the LLM actually returns
+            print(f"[DEBUG] Raw LLM response for competitor extraction:\n{content}\n{'='*50}")
+
             # Layer 1: Strip markdown code block wrappers if present
             if "```json" in content:
                 content = content.split("```json")[1].split("```")[0].strip()
             elif "```" in content:
                 content = content.split("```")[1].split("```")[0].strip()
+
+            competitors = []
 
             # Layer 2: Try parsing as JSON object with "competitors" key
             try:
@@ -55,20 +60,29 @@ class ResearcherAgent:
                     competitors = parsed["competitors"]
                 elif isinstance(parsed, list):
                     competitors = parsed
-                else:
-                    competitors = []
             except json.JSONDecodeError:
-                # Layer 3: Regex fallback — extract any JSON array from the response
+                pass
+
+            # Layer 3: Regex fallback — extract any JSON array from the full response
+            if not competitors:
                 match = re.search(r'\[.*?\]', content, re.DOTALL)
                 if match:
-                    try:    
+                    try:
                         competitors = json.loads(match.group(0))
                     except json.JSONDecodeError:
-                        competitors = []
-                else:
-                    competitors = []
+                        pass
 
-            competitors = [str(c) for c in competitors if isinstance(c, str)]
+            # Layer 4: Last resort — extract all double-quoted strings from the response
+            if not competitors:
+                quoted = re.findall(r'"([^"]{2,50})"', content)
+                # Filter out common non-competitor strings
+                ignore = {"competitors", "competitor 1", "competitor 2", "type", "object", "array", "string"}
+                competitors = [q for q in quoted if q.lower() not in ignore]
+
+            # Ensure we have a clean list of strings
+            competitors = [str(c).strip() for c in competitors if isinstance(c, str) and len(str(c).strip()) > 1]
+
+            print(f"[DEBUG] Extracted competitors: {competitors}")
 
             return {"competitors": competitors}
 
