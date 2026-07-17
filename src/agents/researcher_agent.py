@@ -29,7 +29,7 @@ class ResearcherAgent:
 
             query = f"Top competitors and products in the space of {user_input}"
 
-            competitor_data = web_search(query = query, max_results = 1)
+            competitor_data = web_search(query = query)
 
             prompt = ChatPromptTemplate.from_template(COMPETITOR_EXTRACT_PROMPT)
 
