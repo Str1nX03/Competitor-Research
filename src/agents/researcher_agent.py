@@ -4,6 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from src.exception import CustomException
 import sys
 import json
+import re
 from langgraph.graph import StateGraph, START, END
 from src.prompts.researcher_prompt import COMPETITOR_EXTRACT_PROMPT
 
@@ -31,28 +32,40 @@ class ResearcherAgent:
 
             competitor_data = web_search(query)
 
-            schema = {
-                "title": "CompetitorExtraction",
-                "type": "object",
-                "properties": {
-                    "competitors": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "List of competitors names extracted from the query"
-                    }
-                },
-                "required": ["competitors"]
-            }
-
-            structured_llm = self.llm.with_structured_output(schema, method="json_mode")
-
             prompt = ChatPromptTemplate.from_template(COMPETITOR_EXTRACT_PROMPT)
 
-            response = structured_llm.invoke(prompt.format(
+            response = self.llm.invoke(prompt.format(
                 competitor_data = competitor_data
             ))
+            content = response.content.strip()
 
-            competitors = response.get("competitors", []) if isinstance(response, dict) else []
+            # Layer 1: Strip markdown code block wrappers if present
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+
+            # Layer 2: Try parsing as JSON object with "competitors" key
+            try:
+                parsed = json.loads(content)
+                if isinstance(parsed, dict) and "competitors" in parsed:
+                    competitors = parsed["competitors"]
+                elif isinstance(parsed, list):
+                    competitors = parsed
+                else:
+                    competitors = []
+            except json.JSONDecodeError:
+                # Layer 3: Regex fallback — extract any JSON array from the response
+                match = re.search(r'\[.*?\]', content, re.DOTALL)
+                if match:
+                    try:    
+                        competitors = json.loads(match.group(0))
+                    except json.JSONDecodeError:
+                        competitors = []
+                else:
+                    competitors = []
+
+            competitors = [str(c) for c in competitors if isinstance(c, str)]
 
             return {"competitors": competitors}
 
