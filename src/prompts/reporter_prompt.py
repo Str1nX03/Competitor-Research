@@ -7,7 +7,7 @@ Company Name: {name}
 Research Data:
 {research_data}
 
-This should be the template you should follow to lay down the report:-
+This should be the template you should follow to lay down the report and everything should be in a tabular format:-
 
 **Name:**
 **What they do:**
@@ -18,5 +18,7 @@ This should be the template you should follow to lay down the report:-
 **Website:**
 **Revenue and profit:**
 **Pricing:**
+**Conclusion:**
 
+No more information should be included.
 """
